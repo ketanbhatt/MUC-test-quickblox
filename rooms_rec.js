@@ -3,7 +3,7 @@ var params, chatUser;
 $(document).ready(function() {
 
 	params = {
-		login: 'chetanbhatt',
+		login: 'ankan',
 		password: '12345678'
 	}
 
