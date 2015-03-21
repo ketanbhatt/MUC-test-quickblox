@@ -25,7 +25,7 @@ $(document).ready(function() {
 	    
 	     setTimeout(function () {
 	     	connectChat()
-	     }, 2*3000);
+	     }, 2*1000);
 
 
 	  }
@@ -41,10 +41,14 @@ function connectChat() {
 			console.log("Error at connectChat");
 		} else {
 			QB.chat.onMessageListener = function(senderId, message) {
-				  document.writeln(senderId + ": " + message.body + "\n");
+				  if (senderId == chatUser.id) {
+				  	document.writeln("Me: " + message.body + "<br />");
+				  } else {
+				  	document.writeln(senderId + ": " + message.body + "<br />");
+				  }
 				};			
 			console.log("Chat Connected");
-			setTimeout(function() {connectMUC()}, 2*2000);
+			setTimeout(function() {connectMUC()}, 2*1000);
 		}
 
 	 	
@@ -55,7 +59,6 @@ function connectMUC() {
 	console.log("Inside connectMUC");
 	QB.chat.muc.join(' 20878_550a60c9535c124a1701b1c8@muc.chat.quickblox.com', function () {
 		console.log('User joined');
-		sendMessage();
 	});	
 
 }
