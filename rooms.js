@@ -1,58 +1,53 @@
-var params, chatUser, chatService;
+var params, chatUser;
 
 $(document).ready(function() {
-	//Web SDK initialization
-	QB.init(QBAPP.appID, QBAPP.authKey, QBAPP.authSecret);
 
-	// QuickBlox session creation
-	QB.createSession(function(err, result) {
-		if (err) {
-			console.log(err.detail);
-		} else {
-			$('#loginForm').modal({
-				backdrop: 'static',
-				keyboard: false
-			});
-			
-			//Some code not written
-			
-			// events
-			login();
-	//		$('#logout').click(logout);
-	//		$('.sendMessage').click(sendMessage);
-		}
-	});
-
-	//Some code not written
-
-})
-
-function login() {
 	params = {
 		login: 'chetanbhatt',
 		password: '12345678'
 	}
 
-	// chat user authentication
-	QB.login(params, function(err, result) {
-		if (err) {
-			onConnectFailed();
-			console.log(err);
-		} else {
-			chatUser = {
-				id: result.id,
-				login: params.login,
-				pass: params.password
-			};
+	//Web SDK initialization
+	QB.init(QBAPP.appID, QBAPP.authKey, QBAPP.authSecret);
 
-			connectChat();
+	// create an API session and authenticate user
+	QB.createSession(params, function(err, result) {
+	  if (err) { 
+	    console.log('Something went wrong: ' + err);
+	  } else {
+	    console.log('Session created with id ' + result.id);
+	    chatUser = {
+			login: params.login,
+			password: params.password,
+			jid: result.user_id
 		}
+
+	    setTimeout(function () {
+	    	connectChat();
+	    }, 2*3000);
+
+	  }
+	  
 	});
 
-}
+});
 
 function connectChat() {
-	params = {
+	QB.chat.connect(chatUser , function(err, roster) {
+		if (err) {
+			console.log("Error at connectChat");
+		} else {
+			console.log("Inside");
+			setTimeout(function() {connectMUC()}, 2*2000);
+			console.log(roster);
+		}
+
+	 	
+	});
+}
+
+function connectMUC() {
+/*	params = {
 		// set chat callbacks
 		onConnectFailed: onConnectFailed,
 		onConnectSuccess: onConnectSuccess,
@@ -65,15 +60,14 @@ function connectChat() {
 		
 		debug: true
 	};
-
-	chatService = new QBChat(params);
-	chatService.connect(chatUser);
-	
-	setTimeout(function() {sendMessage()}, 2 * 5000);
+*/
+	QB.chat.muc.join('550a60c9535c124a1701b1c8', function () {
+		console.log('User joined');
+	});	
 
 }
 
-
+/*
 function sendMessage() {
 	var message = {
 	        body: 'Hello world 2',
@@ -86,9 +80,11 @@ function sendMessage() {
 
 }
 
+*/
 
 /* Callbacks
 ----------------------------------------------------------*/
+
 function onConnectFailed() {
 	console.log("Error at onConnectFailed");
 }
