@@ -2,8 +2,9 @@ var params, chatUser;
 
 $(document).ready(function() {
 
+	var login = window.prompt("Enter login");
 	params = {
-		login: 'chetanbhatt',
+		login: login,
 		password: '12345678'
 	}
 
@@ -67,6 +68,10 @@ function sendMessage(msg) {
 	var message = {
 	        body: msg,
 	        type: 'groupchat',
+	        extension: {
+		  save_to_history: 1,
+		  date_sent: Math.floor(Date.now() / 1000)
+		}
 	};
 
 	QB.chat.send(' 20878_550a60c9535c124a1701b1c8@muc.chat.quickblox.com', message);
