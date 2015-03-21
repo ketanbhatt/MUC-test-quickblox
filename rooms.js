@@ -5,7 +5,7 @@ $(document).ready(function() {
 	var login = window.prompt("Enter login");
 	params = {
 		login: login,
-		password: '12345678'
+		password: QBAPP.userPassword
 	}
 
 	//Web SDK initialization
