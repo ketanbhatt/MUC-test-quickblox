@@ -42,12 +42,15 @@ function connectChat() {
 			console.log("Error at connectChat");
 		} else {
 			QB.chat.onMessageListener = function(senderId, message) {
-				  if (senderId == chatUser.id) {
-				  	$('.messages p').append('Me: ' + message.body + '<br />');
-				  } else {
-				  	$('.messages p').append(senderId + ': ' + message.body + '<br />');
-				  }
-				};			
+				if (message.dialog_id == QB.chat.helpers.getDialogIdFromNode(current_room)) {
+					$('.messages p').append('(From Room ' + message.dialog_id + ') ')
+					  if (senderId == chatUser.id) {
+					  	$('.messages p').append('Me: ');
+					  } else {
+					  	$('.messages p').append(senderId + ': ');
+					  }
+					  $('.messages p').append(message.body + '<br />');
+				}};			
 			console.log("Chat Connected");
 			$('#selectCourse').show();
 		}
@@ -94,6 +97,7 @@ function connectMUC() {
 		current_room = QBROOMS[current_course].concepts[$(this).val()];
 	}
 	$('.messages').show();
+	$('.messages p').html('');
 }
 
 function sendMessage(event) {
