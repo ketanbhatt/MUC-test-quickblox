@@ -27,6 +27,7 @@ $(document).ready(function() {
 
 	     //events
 	     $('.choose button').click(connectMUC);
+	     $('.messages button').click(sendMessage);
 	     $('#back').click(goBack);
 	  }
 	  
@@ -56,8 +57,18 @@ function connectChat() {
 }
 
 function goBack() {
+	QB.chat.muc.leave(QBROOMS[current_course].general, function () {
+		console.log('User left Previously joined Room');
+	});
+	for (var i = 0; i < QBROOMS[current_course].concepts.length; i++) {
+		QB.chat.muc.leave(QBROOMS[current_course].concepts[i], function () {
+			console.log("User left Previously joined Room");
+
+		});
+	};
 	$('#selectCourse').show();
 	$('#selectConcept').hide();
+	$('.messages').hide();
 	$('#back').hide();
 }
 
@@ -67,29 +78,35 @@ function connectMUC() {
 	if (current_selection == 'course'){
 		$('#selectCourse').hide();
 		$('#selectConcept').show();
-		current_course = $(this).val()
-		current_room = COURSE_ROOMS[current_course];
+		$('#back').show();
+		current_course = $(this).val();
+		QB.chat.muc.join(QBROOMS[current_course].general, function () {
+			console.log('User joined Course Room');
+		});
+		for (var i = 0; i < QBROOMS[current_course].concepts.length; i++) {
+			QB.chat.muc.join(QBROOMS[current_course].concepts[i], function () {
+				console.log("User joined Concept Room ");
+
+			});
+		};
+		current_room = QBROOMS[current_course].general;
 	} else {
-		current_room = CONCEPT_ROOMS[current_course + '.' + $(this).val()];
+		current_room = QBROOMS[current_course].concepts[$(this).val()];
 	}
 	$('.messages').show();
-	$('.messages p').html('');
-	QB.chat.muc.join(current_room, function () {
-		console.log('User joined');
-	});	
-
 }
 
-function sendMessage(msg) {
+function sendMessage(event) {
+	event.preventDefault();
 	var message = {
-	        body: msg,
+	        body: $('#textMessage').val(),
 	        type: 'groupchat',
 	        extension: {
 		  save_to_history: 1,
 		  date_sent: Math.floor(Date.now() / 1000)
 		}
 	};
-
+	$('#textMessage').val('');
 	QB.chat.send(current_room, message);
 	console.log("Message sent");
 
