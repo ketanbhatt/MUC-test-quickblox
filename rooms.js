@@ -1,7 +1,6 @@
-var params, chatUser;
+var params, chatUser, current_course, current_room;
 
 $(document).ready(function() {
-
 	var login = window.prompt("Enter login");
 	params = {
 		login: login,
@@ -9,7 +8,7 @@ $(document).ready(function() {
 	}
 
 	//Web SDK initialization
-	QB.init(QBAPP.appID, QBAPP.authKey, QBAPP.authSecret);
+	QB.init(QBAPP.appID, QBAPP.authKey, QBAPP.authSecret, QBAPP.debug);
 
 	// create an API session and authenticate user
 	QB.createSession(params, function(err, result) {
@@ -22,13 +21,13 @@ $(document).ready(function() {
 		password: result.token,
 		id: result.user_id,
 		appId: result.application_id
-	}
+	};
 	    
-	     setTimeout(function () {
-	     	connectChat()
-	     }, 2*1000);
+	     connectChat();
 
-
+	     //events
+	     $('.choose button').click(connectMUC);
+	     $('#back').click(goBack);
 	  }
 	  
 	});
@@ -43,22 +42,39 @@ function connectChat() {
 		} else {
 			QB.chat.onMessageListener = function(senderId, message) {
 				  if (senderId == chatUser.id) {
-				  	document.writeln("Me: " + message.body + "<br />");
+				  	$('.messages p').append('Me: ' + message.body + '<br />');
 				  } else {
-				  	document.writeln(senderId + ": " + message.body + "<br />");
+				  	$('.messages p').append(senderId + ': ' + message.body + '<br />');
 				  }
 				};			
 			console.log("Chat Connected");
-			setTimeout(function() {connectMUC()}, 2*1000);
+			$('#selectCourse').show();
 		}
 
 	 	
 	});
 }
 
+function goBack() {
+	$('#selectCourse').show();
+	$('#selectConcept').hide();
+	$('#back').hide();
+}
+
 function connectMUC() {
-	console.log("Inside connectMUC");
-	QB.chat.muc.join(' 20878_550a60c9535c124a1701b1c8@muc.chat.quickblox.com', function () {
+	
+	var current_selection = $(this).attr('class');
+	if (current_selection == 'course'){
+		$('#selectCourse').hide();
+		$('#selectConcept').show();
+		current_course = $(this).val()
+		current_room = COURSE_ROOMS[current_course];
+	} else {
+		current_room = CONCEPT_ROOMS[current_course + '.' + $(this).val()];
+	}
+	$('.messages').show();
+	$('.messages p').html('');
+	QB.chat.muc.join(current_room, function () {
 		console.log('User joined');
 	});	
 
@@ -74,7 +90,7 @@ function sendMessage(msg) {
 		}
 	};
 
-	QB.chat.send(' 20878_550a60c9535c124a1701b1c8@muc.chat.quickblox.com', message);
+	QB.chat.send(current_room, message);
 	console.log("Message sent");
 
 }
