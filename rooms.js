@@ -27,6 +27,7 @@ $(document).ready(function() {
 
 	     //events
 	     $('.choose button').click(connectMUC);
+	     $('#presentCourse button').click(setCurrent_roomToCourse);
 	     $('.messages button').click(sendMessage);
 	     $('#back').click(goBack);
 	  }
@@ -43,7 +44,6 @@ function connectChat() {
 		} else {
 			QB.chat.onMessageListener = function(senderId, message) {
 				if (message.dialog_id == QB.chat.helpers.getDialogIdFromNode(current_room)) {
-					$('.messages p').append('(From Room ' + message.dialog_id + ') ')
 					  if (senderId == chatUser.id) {
 					  	$('.messages p').append('Me: ');
 					  } else {
@@ -59,6 +59,12 @@ function connectChat() {
 	});
 }
 
+function setCurrent_roomToCourse() {
+	current_room = QBROOMS[current_course].general;
+	$('.messages p').html('');
+	getRoomHistory();
+}
+
 function goBack() {
 	QB.chat.muc.leave(QBROOMS[current_course].general, function () {
 		console.log('User left Previously joined Room');
@@ -71,6 +77,7 @@ function goBack() {
 	};
 	$('#selectCourse').show();
 	$('#selectConcept').hide();
+	$('#presentCourse').hide();
 	$('.messages').hide();
 	$('#back').hide();
 }
@@ -81,6 +88,7 @@ function connectMUC() {
 	if (current_selection == 'course'){
 		$('#selectCourse').hide();
 		$('#selectConcept').show();
+		$('#presentCourse').show();
 		$('#back').show();
 		current_course = $(this).val();
 		QB.chat.muc.join(QBROOMS[current_course].general, function () {
@@ -98,6 +106,8 @@ function connectMUC() {
 	}
 	$('.messages').show();
 	$('.messages p').html('');
+	getRoomHistory();
+	
 }
 
 function sendMessage(event) {
@@ -114,6 +124,19 @@ function sendMessage(event) {
 	QB.chat.send(current_room, message);
 	console.log("Message sent");
 
+}
+
+function getRoomHistory () {
+	QB.chat.message.list({chat_dialog_id: QB.chat.helpers.getDialogIdFromNode(current_room)}, function(err, message) {
+		if (err) {
+			console.log(err);
+		} else {
+			for (var i = 0; i < message.items.length; i++) {
+				$('.messages p').append(message.items[i].sender_id + ': ' + message.items[i].message + '<br />');
+			};
+			$('.messages p').append('*************History ends***************<br />');
+		}
+	});
 }
 
 /* Callbacks
