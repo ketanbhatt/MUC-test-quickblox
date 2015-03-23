@@ -1,4 +1,5 @@
 var params, chatUser, current_course, current_room;
+var unread_count= [0,0,0];
 
 $(document).ready(function() {
 	var login = window.prompt("Enter login");
@@ -50,6 +51,15 @@ function connectChat() {
 					  	$('.messages p').append(senderId + ': ');
 					  }
 					  $('.messages p').append(message.body + '<br />');
+				} else {
+					if (message.dialog_id == QB.chat.helpers.getDialogIdFromNode(QBROOMS[current_course].general)) {
+						unread_count[0] += 1;
+					} else if (message.dialog_id == QB.chat.helpers.getDialogIdFromNode(QBROOMS[current_course].concepts[0])) {
+						unread_count[1] += 1;
+					} else if (message.dialog_id == QB.chat.helpers.getDialogIdFromNode(QBROOMS[current_course].concepts[1])) {
+						unread_count[2] += 1;
+					}
+					showUnread();
 				}};			
 			console.log("Chat Connected");
 			$('#selectCourse').show();
@@ -61,11 +71,16 @@ function connectChat() {
 
 function setCurrent_roomToCourse() {
 	current_room = QBROOMS[current_course].general;
+	$('#presentCourse').hide();
 	$('.messages p').html('');
+	unread_count[0] = 0;
+	showUnread();
 	getRoomHistory();
 }
 
 function goBack() {
+	unread_count = [0,0,0];
+	showUnread();
 	QB.chat.muc.leave(QBROOMS[current_course].general, function () {
 		console.log('User left Previously joined Room');
 	});
@@ -88,7 +103,6 @@ function connectMUC() {
 	if (current_selection == 'course'){
 		$('#selectCourse').hide();
 		$('#selectConcept').show();
-		$('#presentCourse').show();
 		$('#back').show();
 		current_course = $(this).val();
 		QB.chat.muc.join(QBROOMS[current_course].general, function () {
@@ -101,8 +115,11 @@ function connectMUC() {
 			});
 		};
 		current_room = QBROOMS[current_course].general;
-	} else {
+	} else if (current_selection == 'concept'){
 		current_room = QBROOMS[current_course].concepts[$(this).val()];
+		$('#presentCourse').show();
+		unread_count[parseInt($(this).val()) + 1] = 0;
+		showUnread();
 	}
 	$('.messages').show();
 	$('.messages p').html('');
@@ -137,6 +154,15 @@ function getRoomHistory () {
 			$('.messages p').append('*************History ends***************<br />');
 		}
 	});
+}
+
+function showUnread() {
+	var unread_total=0;
+	$.each(unread_count, function() {
+	    unread_total += this;
+	}); 
+	console.log(unread_count);
+	document.getElementById('unread').innerHTML = unread_total;
 }
 
 /* Callbacks
